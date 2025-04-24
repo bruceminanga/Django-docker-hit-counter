@@ -1,7 +1,5 @@
 # Django-docker-hit-counter
 
-# Django Docker Hit Counter
-
 A simple web application built with Django and PostgreSQL, containerized using Docker and Docker Compose. The application displays a counter that increments each time the main page is visited.
 
 This project serves primarily as a hands-on learning exercise to understand fundamental Docker concepts in the context of a web application stack.
