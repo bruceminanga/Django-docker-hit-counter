@@ -1,0 +1,4 @@
+# requirements.txt
+Django>=4.0,<5.0
+psycopg2-binary
+python-dotenv # Good practice for env vars, though we'll set them in Compose

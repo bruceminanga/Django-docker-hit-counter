@@ -1,0 +1,43 @@
+# docker-compose.yml
+version: "3.8" # Specify compose file version
+
+services:
+  # Service 1: PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/ # Mount named volume for persistence
+    environment:
+      # These MUST match the values expected by settings.py (or set via .env)
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mysecretpassword
+    # Expose port only if you need to connect from your host machine directly (optional)
+    # ports:
+    #   - "5432:5432"
+
+  # Service 2: Django Web Application
+  web:
+    build: . # Build the image from Dockerfile in the current directory
+    command: python manage.py runserver 0.0.0.0:8000 # Default command
+    volumes:
+      - .:/app # Mount current directory into /app for live code changes (bind mount)
+    ports:
+      - "8000:8000" # Map host port 8000 to container port 8000
+    environment:
+      # Pass DB connection details to Django app
+      # !! Hostname is the service name 'db' !!
+      - POSTGRES_DB=mydatabase
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_HOST=db # <-- IMPORTANT: Service name!
+      - POSTGRES_PORT=5432
+      # Optional: For Django's debug mode etc.
+      - DEBUG=1
+    depends_on:
+      - db # Wait for the db service container to START (not necessarily be ready)
+
+# Define named volumes
+volumes:
+  postgres_data:
+    # Docker manages this volume. Data persists even if 'db' container is removed.
