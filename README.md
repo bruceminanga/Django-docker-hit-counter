@@ -96,7 +96,7 @@ Through this project, I gained practical experience with:
   ```bash
   # Verify installation
   docker --version
-  docker-compose --version
+  docker compose --version
   ```
 
 ### Setup Instructions
@@ -129,19 +129,19 @@ Through this project, I gained practical experience with:
 3. **Build and start containers**
 
    ```bash
-   docker-compose up -d --build
+   docker compose up -d --build
    ```
 
 4. **Run database migrations**
 
    ```bash
-   docker-compose exec web python manage.py migrate
+   docker compose exec web python manage.py migrate
    ```
 
 5. **Collect static files**
 
    ```bash
-   docker-compose exec web python manage.py collectstatic --noinput
+   docker compose exec web python manage.py collectstatic --noinput
    ```
 
 6. **Access the application**
@@ -158,14 +158,14 @@ Through this project, I gained practical experience with:
 
 | Command                         | Description                                        |
 | ------------------------------- | -------------------------------------------------- |
-| `docker-compose up -d`          | Start services in detached mode                    |
-| `docker-compose up -d --build`  | Start services, forcing image rebuild              |
-| `docker-compose down`           | Stop and remove containers, networks               |
-| `docker-compose down --volumes` | Stop containers and delete volumes (⚠️ data loss!) |
-| `docker-compose ps`             | List running containers                            |
-| `docker-compose logs`           | View logs from all services                        |
-| `docker-compose logs web`       | View logs from the web service only                |
-| `docker-compose restart web`    | Restart the web service after code changes         |
+| `docker compose up -d`          | Start services in detached mode                    |
+| `docker compose up -d --build`  | Start services, forcing image rebuild              |
+| `docker compose down`           | Stop and remove containers, networks               |
+| `docker compose down --volumes` | Stop containers and delete volumes (⚠️ data loss!) |
+| `docker compose ps`             | List running containers                            |
+| `docker compose logs`           | View logs from all services                        |
+| `docker compose logs web`       | View logs from the web service only                |
+| `docker compose restart web`    | Restart the web service after code changes         |
 
 ## 📁 Key Project Files
 
