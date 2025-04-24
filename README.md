@@ -1,120 +1,194 @@
-# Learning Docker with Django: A Simple Hit Counter Project
+# 🐳 Django Docker Hit Counter
 
-Welcome! This project demonstrates how to containerize a basic web application using Docker and Docker Compose. We use **Django** (a Python web framework) and **PostgreSQL** (a relational database) as our example stack, but the **Docker concepts learned here are applicable to nearly any technology stack** (Node.js, PHP, Ruby, Go, etc.).
+A hands-on project demonstrating how to containerize a Django web application using Docker and Docker Compose, progressing from basic setups to production-ready configurations with Nginx and Gunicorn.
 
-The goal is to provide a clear, hands-on example that teaches fundamental Docker skills by building and running this simple page-visit counter.
+## 📋 Overview
 
-## What You Will Learn (Key Docker Concepts)
+This project showcases a simple but practical page visit counter application built with Django and PostgreSQL, deployed using Docker. It serves as a learning resource for Docker concepts that apply to virtually any tech stack.
 
-By running and exploring this project, you'll gain practical understanding of:
+## 🏗️ Project Architecture
 
-1. 🐳 **Using Official Images:** Starting services quickly using pre-built images (like `postgres` and `python`).
-2. 📝 **Custom Docker Images (`Dockerfile`):** Writing your own `Dockerfile` to define the environment for your application (installing dependencies, copying code, setting commands).
-3. ⚙️ **Environment Variables:** Configuring containers dynamically (e.g., database credentials) without hardcoding them.
-4. 💾 **Persistent Data (`volumes`):** Making sure your database data survives container restarts using Docker named volumes.
-5. 🔗 **Container Networking:** Enabling seamless communication between containers (your Django app talking to the Postgres database) using Docker's internal networking.
-6. ⚙️ **Multi-Container Orchestration (`docker-compose.yml`):** Defining and managing your entire application stack (web + database) with a single configuration file.
-7. 🔄 **Development Workflow (`bind mounts`):** Setting up live code reloading for efficient development by mounting your local code directly into the container.
-8. 🚀 **Executing Commands (`docker-compose exec`):** Running commands (like database migrations) inside your running containers.
-9. ⚡ **Build Optimization (`.dockerignore`, Layer Caching):** Techniques to make your Docker image builds faster and smaller.
+### System Components
 
-## Technology Stack
+This project uses a three-tier architecture with the following containerized services:
+
+1. **Web Server (Nginx)**
+
+   - Handles incoming HTTP requests
+   - Serves static files directly
+   - Forwards dynamic requests to the application server
+
+2. **Application Server (Gunicorn + Django)**
+
+   - Processes business logic
+   - Renders dynamic content
+   - Manages database operations
+
+3. **Database (PostgreSQL)**
+   - Stores visit counter data
+   - Maintains data persistence
+
+### Data Flow
+
+When a user visits the site:
+
+1. The request arrives at the **Nginx** container (port 80)
+2. Nginx determines the request type:
+   - For static files (`/static/*`): Serves directly from the shared volume
+   - For dynamic requests: Forwards to Gunicorn
+3. **Gunicorn** receives the request and passes it to Django
+4. **Django** processes the request:
+   - Records a new page visit in PostgreSQL
+   - Retrieves the updated count
+   - Generates HTML response
+5. The response returns through the same path: Django → Gunicorn → Nginx → User
+
+### Data Persistence
+
+The project uses Docker volumes for persistence:
+
+- **postgres_data**: Stores PostgreSQL database files
+- **staticfiles**: Contains static assets collected from Django
+- **Code volume**: Bind mount for development that synchronizes local changes
+
+### Configuration Management
+
+Environment variables stored in a `.env` file (not tracked in Git) provide configuration for:
+
+- Database credentials
+- Django secret key
+- Debug settings
+
+Docker Compose injects these variables into the appropriate containers at runtime.
+
+## 🎓 What I Learned
+
+Through this project, I gained practical experience with:
+
+- Using official Docker images (`postgres`, `python`, `nginx`)
+- Writing custom Dockerfiles for your applications
+- Setting up Gunicorn as a production WSGI server
+- Configuring Nginx as a reverse proxy
+- Managing static files efficiently
+- Implementing secrets management with `.env` files
+- Ensuring data persistence with Docker volumes
+- Setting up container networking
+- Orchestrating multiple containers with Docker Compose
+- Creating an efficient development workflow
+- Executing commands in running containers
+- Optimizing Docker builds
+- Implementing basic CI/CD with GitHub Actions
+
+## 🛠️ Technology Stack
 
 - **Backend:** Python 3.9+ with Django 4.x
+- **WSGI Server:** Gunicorn
+- **Reverse Proxy:** Nginx
 - **Database:** PostgreSQL 15
 - **Containerization:** Docker & Docker Compose
+- **CI/CD:** GitHub Actions
 
-## How It Works
-
-The application has one main page. Every time you visit or refresh this page:
-
-1. The Django view code runs inside the `web` container.
-2. It tells the PostgreSQL database (running in the `db` container) to record a new "hit".
-3. It then asks the database for the total number of hits recorded so far.
-4. Finally, it displays the total count on the web page.
-
-## Getting Started: Running the Project
-
-Let's get this running on your machine!
+## 🚀 Getting Started
 
 ### Prerequisites
 
-Make sure you have Docker and Docker Compose installed and running.
+- Docker and Docker Compose
+  ```bash
+  # Verify installation
+  docker --version
+  docker-compose --version
+  ```
 
-- **Docker:** Download from [Docker's official website](https://docs.docker.com/get-docker/).
-- **Docker Compose:** Usually included with Docker Desktop (Mac/Windows). Linux users might need a separate install (see Docker docs).
+### Setup Instructions
 
-Verify your installation in your terminal:
-
-```bash
-docker --version
-docker-compose --version # or 'docker compose version'
-```
-
-### Step-by-Step Instructions
-
-1. **Clone the Repository:**
+1. **Clone the repository**
 
    ```bash
-   git clone <your-repository-url>
-   cd <your-project-directory-name> # e.g., django-docker-hit-counter
+   git clone <repository-url>
+   cd django-docker-hit-counter
    ```
 
-2. **Build and Start the Containers:**
+2. **Create the `.env` file**
+
+   ```
+   # Database Credentials
+   POSTGRES_DB=mydatabase
+   POSTGRES_USER=myuser
+   POSTGRES_PASSWORD=mysecretpassword
+
+   # Django Secret Key (Generate a new one!)
+   # python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+   DJANGO_SECRET_KEY='your_strong_random_secret_key_here'
+
+   # Other Settings
+   DEBUG=1  # Set to 0 for production simulation
+   ```
+
+   ⚠️ **Important:** Add `.env` to your `.gitignore`!
+
+3. **Build and start containers**
 
    ```bash
    docker-compose up -d --build
    ```
 
-   _(You only need --build the first time or when you change Dockerfile or requirements.txt)_
-
-3. **Run Database Migrations:**
+4. **Run database migrations**
 
    ```bash
-   # Optional: Create migration files if you changed models.py
-   # docker-compose exec web python manage.py makemigrations counter
-
-   # Tell Django to create the database tables in the 'db' container
    docker-compose exec web python manage.py migrate
    ```
 
-4. **Access the Application:**
-   Open your web browser and go to:
-   http://localhost:8000
+5. **Collect static files**
 
-   You should see the hit counter. Refresh the page – the count will go up!
+   ```bash
+   docker-compose exec web python manage.py collectstatic --noinput
+   ```
 
-## Development Workflow Explained
+6. **Access the application**
+   - Open [http://localhost/](http://localhost/)
+   - Watch the counter increment with each refresh!
 
-This setup is designed for easy development:
+## 💻 Development Workflow
 
-- **Live Code Reloading:** Thanks to the `volumes: - .:/app` line in docker-compose.yml (a bind mount), the code on your computer is directly mapped into the web container. If you edit a Python file (like counter/views.py) and save it, Django's development server inside the container will automatically detect the change and reload. Just refresh your browser! No need to rebuild the image for simple code changes.
+- **Live Code Reloading:** Local changes are synced to the container via bind mounts
+- **Database Persistence:** Named volumes ensure data survives container restarts
+- **Static Files:** Nginx serves static files directly from a shared volume
 
-- **Database Persistence:** The `volumes: - postgres_data:/var/lib/postgresql/data/` line for the db service creates a named volume. Docker manages this volume, and it's where PostgreSQL stores its data files. Even if you run `docker-compose down` (which stops and removes containers), this volume remains. When you run `docker-compose up` again, the db container re-attaches to the existing volume, and your hit count is still there!
+## 📚 Common Docker Commands
 
-## Useful Docker Commands for This Project
+| Command                         | Description                                        |
+| ------------------------------- | -------------------------------------------------- |
+| `docker-compose up -d`          | Start services in detached mode                    |
+| `docker-compose up -d --build`  | Start services, forcing image rebuild              |
+| `docker-compose down`           | Stop and remove containers, networks               |
+| `docker-compose down --volumes` | Stop containers and delete volumes (⚠️ data loss!) |
+| `docker-compose ps`             | List running containers                            |
+| `docker-compose logs`           | View logs from all services                        |
+| `docker-compose logs web`       | View logs from the web service only                |
+| `docker-compose restart web`    | Restart the web service after code changes         |
 
-| Command                                          | Description                                              |
-| ------------------------------------------------ | -------------------------------------------------------- |
-| `docker-compose up -d`                           | Start services in detached mode                          |
-| `docker-compose up -d --build`                   | Start services, forcing image rebuild                    |
-| `docker-compose down`                            | Stop and remove containers, networks                     |
-| `docker-compose down --volumes`                  | Stop containers and delete volumes (caution: data loss!) |
-| `docker-compose ps`                              | List running containers managed by Compose               |
-| `docker-compose logs`                            | View logs from all services                              |
-| `docker-compose logs web`                        | View logs from the web service only                      |
-| `docker-compose logs -f`                         | Follow logs in real-time                                 |
-| `docker-compose exec web python manage.py shell` | Execute Django shell in the web container                |
+## 📁 Key Project Files
 
-## Understanding Key Project Files
+| File                       | Purpose                                             |
+| -------------------------- | --------------------------------------------------- |
+| `Dockerfile`               | Blueprint for the Django/Gunicorn application image |
+| `docker-compose.yml`       | Orchestrates services, volumes, and networking      |
+| `.env`                     | Stores secrets and configuration variables          |
+| `nginx/nginx.conf`         | Nginx configuration for static files and proxying   |
+| `requirements.txt`         | Python dependencies                                 |
+| `project/settings.py`      | Django configuration                                |
+| `.github/workflows/ci.yml` | GitHub Actions workflow for CI                      |
 
-| File                    | Purpose                                                        |
-| ----------------------- | -------------------------------------------------------------- |
-| **Dockerfile**          | Blueprint for building the Django application image            |
-| **docker-compose.yml**  | Orchestration file defining services, networks, volumes        |
-| **.dockerignore**       | Specifies which files to exclude from the Docker context       |
-| **requirements.txt**    | Lists Python dependencies for the Django app                   |
-| **project/settings.py** | Django configuration with database settings from env variables |
-| **counter/**            | Django app with models, views, and URLs for the counter logic  |
+## 🔄 Continuous Integration
 
-Feel free to explore the code, experiment with the Docker commands, and use this as a foundation for your own containerized projects!
+This project includes a basic CI pipeline using GitHub Actions that performs:
+
+- Code checkout
+- Python setup
+- Dependency installation
+- Code linting
+- Django's built-in checks
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
