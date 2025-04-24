@@ -66,7 +66,7 @@ Docker Compose injects these variables into the appropriate containers at runtim
 Through this project, I gained practical experience with:
 
 - Using official Docker images (`postgres`, `python`, `nginx`)
-- Writing custom Dockerfiles for your applications
+- Writing custom Dockerfiles for my applications
 - Setting up Gunicorn as a production WSGI server
 - Configuring Nginx as a reverse proxy
 - Managing static files efficiently
