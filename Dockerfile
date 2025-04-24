@@ -24,6 +24,6 @@ COPY . .
 # 7. Expose Port: Inform Docker the container listens on port 8000
 EXPOSE 8000
 
-# 8. Default Command: Run the Django development server
-# Use 0.0.0.0 to accept connections from any IP (needed inside Docker)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# 8. Default Command: Use Gunicorn to run the application
+# --bind 0.0.0.0:8000 : Listen on port 8000 on all available network interfaces inside the container
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "project.wsgi:application"]

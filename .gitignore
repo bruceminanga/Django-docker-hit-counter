@@ -1,0 +1,5 @@
+# .gitignore
+.env # <--- Add this line
+__pycache__/
+*.pyc
+staticfiles/ # Don't commit collected static files
